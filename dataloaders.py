@@ -2,52 +2,82 @@ import os
 import numpy as np
 import torch
 
+from enum import Enum
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
+DATA_DIR = 'data/'
 
-def get_mnist_dataloader(dataset_dir, train, dataloader_params, dist_mean=0.5, dist_stddev=0.5):
+class DatasetType(Enum):
+    MNIST = 0
+    USPS = 1
+    SVHN = 2
+
+def sample_dataset(data, n_samples, seed):
+    np.random.seed(seed)
+    rand_idx = np.random.permutation(len(data))
+
+    return rand_idx[:n_samples]
+
+def get_mnist_dataloader(train, dataloader_params, n_samples, seed):
     transform = transforms.Compose([transforms.ToTensor(),
-                                    transforms.Normalize((dist_mean,), (dist_stddev,))])
-    dataset = datasets.MNIST(root = dataset_dir,
+                                    transforms.Normalize((0.5,), (0.5,))
+                                   ])
+    dataset = datasets.MNIST(root = DATA_DIR,
                             train = train, 
                             download = True,
                             transform = transform)
 
-    return DataLoader(dataset, **dataloader_params)
+    if n_samples is None:
+        return DataLoader(dataset, **dataloader_params)    
+
+    select_idx = sample_dataset(dataset, n_samples, seed)
+    return DataLoader(dataset, sampler = SubsetRandomSampler(select_idx), **dataloader_params)
 
 
-def get_usps_dataloader(dataset_dir, train, dataloader_params, dist_mean=0.5, dist_stddev=0.5):
+def get_usps_dataloader(train, dataloader_params, n_samples, seed):
     transform = transforms.Compose([transforms.ToTensor(),
-                                    transforms.Normalize((dist_mean,), (dist_stddev,))])
-    dataset = datasets.USPS(root = os.path.join(dataset_dir, "USPS"),
+                                    transforms.Normalize((0.5, ), (0.5,))
+                                    ])
+    dataset = datasets.USPS(root = os.path.join(DATA_DIR, "USPS"),
                             train = train,
                             download = True,
                             transform = transform)
 
-    return DataLoader(dataset, **dataloader_params)
+    if n_samples is None:
+        return DataLoader(dataset, **dataloader_params)    
+
+    select_idx = sample_dataset(dataset, n_samples, seed)
+    return DataLoader(dataset, sampler = SubsetRandomSampler(select_idx), **dataloader_params)
 
 
-def get_svhn_dataloader(dataset_dir, train, dataloader_params, dist_mean=0.5, dist_stddev=0.5):
+def get_svhn_dataloader(train, dataloader_params, n_samples, seed):
     transform = transforms.Compose([transforms.ToTensor(),
-                                    transforms.Normalize((dist_mean,), (dist_stddev,))])
-    dataset = datasets.SVHN(root = os.path.join(dataset_dir, "SVHN"),
+                                    transforms.Normalize((0.5, 0.5, 0.5,), (0.5, 0.5, 0.5,))
+                                    ])
+    dataset = datasets.SVHN(root = os.path.join(DATA_DIR, "SVHN"),
+                            split = "train" if train else "test",
                             download = True,
                             transform = transform)
 
-    # Create consistent test train splits.
-    N = len(dataset)
-    train_test_split = 0.7
-    pivot = int(train_test_split * N)
-    np.random.seed(0)
-    rand_idx = np.random.permutation(N)
-    select_idx = None
-    
-    if train:
-        select_idx = rand_idx[:pivot] 
+    if n_samples is None:
+        return DataLoader(dataset, **dataloader_params)    
 
-    else:
-        select_idx = rand_idx[pivot:]
-
+    select_idx = sample_dataset(dataset, n_samples, seed)
     return DataLoader(dataset, sampler = SubsetRandomSampler(select_idx), **dataloader_params)
+
+
+def get_dataloader(dataset_type, train, dataloader_params, n_samples=None, seed=0):
+    loader = None
+
+    if dataset_type == DatasetType.MNIST:
+        loader = get_mnist_dataloader(train, dataloader_params, n_samples, seed)
+
+    elif dataset_type == DatasetType.USPS:
+        loader = get_usps_dataloader(train, dataloader_params, n_samples, seed)
+
+    elif dataset_type == DatasetType.SVHN:
+        loader = get_svhn_dataloader(train, dataloader_params, n_samples, seed)
+
+    return loader
