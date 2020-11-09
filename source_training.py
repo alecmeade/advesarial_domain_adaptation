@@ -19,6 +19,7 @@ def source_train(args):
 	loader = get_dataloader(DatasetType[args.source_dataset], 
 							True, 
 					        dataloader_params, 
+					        (args.img_dim, args.img_dim),
 					        args.n_samples)
 
 	model = LeNet()
@@ -38,6 +39,7 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--source_dataset', type=str, default = "MNIST")
     arg_parser.add_argument('--n_samples', type=int, default = 7000)
+    arg_parser.add_argument('--img_dim', type=int, default = 28)
     arg_parser.add_argument('--learning_rate', type=float, default = 0.01)
     arg_parser.add_argument('--batch_size', type=int, default = 16) 
     arg_parser.add_argument('--epochs', type=int, default = 30)
