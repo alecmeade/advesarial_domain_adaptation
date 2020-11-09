@@ -6,8 +6,9 @@ class LeNet(nn.Module):
 		self.encoder = nn.Sequential(
 			nn.Conv2d(3, 6, 5),
 			nn.ReLU(),
-			nn.MaxPool2d(2, 2),
+			nn.MaxPool2d(2),
 			nn.Conv2d(6, 16, 5),
+			nn.MaxPool2d(2),
 			nn.ReLU()
 		)
 
