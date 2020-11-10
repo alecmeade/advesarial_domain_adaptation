@@ -1,14 +1,14 @@
 import torch.nn
 
 class AddaDiscriminator(nn.Module):
-	def __init__(self, out_features = 1):
+	def __init__(self, hidden = 500, out = 1):
 		super().__init__()
 		self.model = Sequential(
-	        nn.Linear(500, 500),
+	        nn.Linear(120, hidden),
 	        nn.ReLU(),
-	        nn.Linear(500, 500),
+	        nn.Linear(hidden, hidden),
 	        nn.ReLU(),
-	        nn.Linear(500, out_features)
+	        nn.Linear(hidden, out)
 		)
 
 	def forward(self, x):
