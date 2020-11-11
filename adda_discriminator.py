@@ -1,9 +1,9 @@
-import torch.nn
+import torch.nn as nn
 
 class AddaDiscriminator(nn.Module):
 	def __init__(self, hidden = 500, out = 1):
 		super().__init__()
-		self.model = Sequential(
+		self.model = nn.Sequential(
 	        nn.Linear(120, hidden),
 	        nn.ReLU(),
 	        nn.Linear(hidden, hidden),
@@ -12,4 +12,4 @@ class AddaDiscriminator(nn.Module):
 		)
 
 	def forward(self, x):
-		return self.model()
+		return self.model(x)

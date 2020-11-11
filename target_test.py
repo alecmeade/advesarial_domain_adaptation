@@ -27,26 +27,9 @@ def compute_metrics(metrics):
     return values
 
 
-def reset_metrics(metrics):
-    for metric in metrics.values():
-        metric.reset()
-
-
 def update_metrics(metrics, pred, y_batch):
     for name, metric in metrics.items():
         metric.update((pred, y_batch))
-
-
-def train_step(device, model, optimizer, criterion, x_batch, y_batch):
-    x_batch = x_batch.to(device)
-    y_batch = y_batch.to(device)
-
-    optimizer.zero_grad()
-    pred = model(x_batch)
-    loss = criterion(pred, y_batch)
-    loss.backward()
-    optimizer.step()
-    return loss
 
 
 def eval_step(device, model, criterion, x_batch, y_batch):
@@ -57,18 +40,29 @@ def eval_step(device, model, criterion, x_batch, y_batch):
     return pred
 
 
-def source_train(args):
+def get_best_model(model_dir):
+    max_score = 0
+    max_model = None
+    for f in os.listdir(model_dir):
+        if f.endswith('.pt'):
+            model_score = float(f.split("_")[2])
+            if model_score > max_score:
+                max_score = model_score
+                max_model = f
+
+    return max_model
+
+def target_test(args):
     device = cuda_utils.maybe_get_cuda_device()
 
     dataloader_params = {
         'batch_size': args.batch_size,
         'pin_memory': True,
-        'drop_last': True,
+        'drop_last': False,
     }
 
 
-
-    train_loader = get_dataloader(DatasetType[args.source_dataset], 
+    train_loader = get_dataloader(DatasetType[args.target_dataset], 
                                   True, 
                                   dataloader_params, 
                                   (args.img_dim, args.img_dim),
@@ -76,7 +70,7 @@ def source_train(args):
 
 
     dataloader_params['drop_last'] = False
-    eval_loader = get_dataloader(DatasetType[args.source_dataset], 
+    eval_loader = get_dataloader(DatasetType[args.target_dataset], 
                                   False, 
                                   dataloader_params, 
                                   (args.img_dim, args.img_dim),
@@ -84,10 +78,12 @@ def source_train(args):
 
     n_classes = 10
     model = LeNet()
+    model_name = get_best_model(args.model_dir)
+    source_dataset = model_name.split("_")[0]
+    model = torch.load(os.path.join(args.model_dir, model_name))
     model.to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr = args.learning_rate)
     criterion = nn.CrossEntropyLoss()
-
+    
 
     train_metrics = {
         'train_loss': metrics.Loss(criterion),
@@ -102,47 +98,34 @@ def source_train(args):
     }
 
 
-    logger = logging_utils.Logger("_".join(["source_train", args.source_dataset, str(args.n_train_samples), 
+    logger = logging_utils.Logger("_".join(["target_test", 
+                                            source_dataset, 
+                                            args.target_dataset,
                                   str(args.n_test_samples), args.log_suffix]),
                                   args,
-                                  (["epoch"] + list(train_metrics.keys())  + list(val_metrics.keys())))
+                                  (list(train_metrics.keys())  + list(val_metrics.keys())))
 
 
-    for epoch in range(args.epochs):
-        print("Epoch: %d" % epoch)
-        # Train
-        model.train()
-        for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
-            loss = train_step(device, model, optimizer, criterion, x_batch, y_batch)
-            
-            if batch_idx % args.log_steps == 0:
-                print ("Epoch: %d | Batch: %d | Loss: %0.2f" % (epoch, batch_idx, loss))
+    # Evaluate
+    model.eval()
+    with torch.no_grad():
+        for x_batch, y_batch in train_loader:
+            pred = eval_step(device, model, criterion, x_batch, y_batch)
+            update_metrics(train_metrics, pred, y_batch)
 
-        # Evaluate
-        model.eval()
-        with torch.no_grad():
-            for x_batch, y_batch in train_loader:
-                pred = eval_step(device, model, criterion, x_batch, y_batch)
-                update_metrics(train_metrics, pred, y_batch)
-
-            print("Train:")
-            train_values = compute_metrics(train_metrics)
-            reset_metrics(train_metrics)
+        print("Train:")
+        train_values = compute_metrics(train_metrics)
 
 
-            for x_batch, y_batch in eval_loader:
-                pred = eval_step(device, model, criterion, x_batch, y_batch)
-                update_metrics(val_metrics, pred, y_batch)
+        for x_batch, y_batch in eval_loader:
+            pred = eval_step(device, model, criterion, x_batch, y_batch)
+            update_metrics(val_metrics, pred, y_batch)
 
-            print("Validate:")
-            val_values = compute_metrics(val_metrics)
+        print("Validate:")
+        val_values = compute_metrics(val_metrics)
 
-            model_name = "%s_%d_%0.4f_.pt" % (args.source_dataset, epoch, val_metrics['val_accuracy'].compute())
-            torch.save(model, os.path.join(logger.log_dir, model_name))
-            reset_metrics(val_metrics)
-
-            logger.log_metrics_line([str(epoch)] + list(train_values) + list(val_values))
-        
+        logger.log_metrics_line(list(train_values) + list(val_values))
+    
 
     logger.close_log()
 
@@ -151,15 +134,14 @@ def source_train(args):
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--source_dataset', type=str, default = "USPS")
+    arg_parser.add_argument('--model_dir', type=str, default = 'logs/source_train_SVHN_None_None__0')
+    arg_parser.add_argument('--target_dataset', type=str, default = "MNIST")
     arg_parser.add_argument('--n_train_samples', type=int, default = None)
     arg_parser.add_argument('--n_test_samples', type=int, default = None)
     arg_parser.add_argument('--img_dim', type=int, default = 32)
-    arg_parser.add_argument('--learning_rate', type=float, default = 0.001)
     arg_parser.add_argument('--batch_size', type=int, default = 32) 
-    arg_parser.add_argument('--epochs', type=int, default = 30)
-    arg_parser.add_argument('--log_steps', type=int, default = 50)
     arg_parser.add_argument('--log_suffix', type=str, default = "_0")
     args = arg_parser.parse_args()
 
-    model = source_train(args)
+    model = target_test(args)
+    
