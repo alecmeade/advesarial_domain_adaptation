@@ -50,16 +50,15 @@ if __name__ == "__main__":
 
 	train_n = None
 	test_n = None
-	img_size = (28, 28)
 
-	mnist_train = dataloaders.get_mnist_dataloader(True, dataloader_params, img_size, train_n)
-	mnist_test = dataloaders.get_mnist_dataloader(False, dataloader_params, img_size, test_n)
+	mnist_train = dataloaders.get_mnist_dataloader(True, dataloader_params, train_n)
+	mnist_test = dataloaders.get_mnist_dataloader(False, dataloader_params, test_n)
 
-	usps_train = dataloaders.get_usps_dataloader(True, dataloader_params, img_size, train_n)
-	usps_test = dataloaders.get_usps_dataloader(False, dataloader_params, img_size, test_n)
+	usps_train = dataloaders.get_usps_dataloader(True, dataloader_params, train_n)
+	usps_test = dataloaders.get_usps_dataloader(False, dataloader_params, test_n)
 
-	svhn_train = dataloaders.get_svhn_dataloader(True, dataloader_params, img_size, train_n)
-	svhn_test = dataloaders.get_svhn_dataloader(False, dataloader_params, img_size, test_n)
+	svhn_train = dataloaders.get_svhn_dataloader(True, dataloader_params, train_n)
+	svhn_test = dataloaders.get_svhn_dataloader(False, dataloader_params, test_n)
 
 
 	datasets = [

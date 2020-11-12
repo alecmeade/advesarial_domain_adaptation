@@ -1,1 +1,0 @@
-source_dataset : MNISTn_samples : 7000img_dim : 32learning_rate : 0.01batch_size : 32epochs : 30log_steps : 50model_checkpoint_epochs : 1log_suffix : _0
