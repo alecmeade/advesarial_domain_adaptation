@@ -52,6 +52,7 @@ def train_model(logger, train_dataset, args):
     logger.write_log_line(header_cols)
 
     for epoch in range(args.train_epochs):
+        print("%s - Epoch: %d" % (log_prefix, epoch))
         model.train()
         for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
             loss = train_step(device, model, optimizer, criterion, x_batch, y_batch)
@@ -60,12 +61,12 @@ def train_model(logger, train_dataset, args):
         with torch.no_grad():
             for x_batch, y_batch in train_loader:
                 pred = eval_step(device, model, criterion, x_batch, y_batch)
-                utils.update_metrics(train_metrics, pred, y_batch)
+                utils.update_metrics(train_metrics, pred, y_batch.to(device))
 
 
             for x_batch, y_batch in eval_loader:
                 pred = eval_step(device, model, criterion, x_batch, y_batch)
-                utils.update_metrics(val_metrics, pred, y_batch)
+                utils.update_metrics(val_metrics, pred, y_batch.to(device))
 
             val_values = utils.compute_metrics(val_metrics)
             train_values = utils.compute_metrics(train_metrics)

@@ -58,7 +58,7 @@ def adapt_model(logger, source_dataset, target_dataset, args):
 
 
     for epoch in range(args.adapt_epochs):
-
+        print("%s - Epoch: %d" % (log_prefix, epoch))
         target_model.train()
         dual_loader = zip(source_train_loader, target_train_loader)
         for i, ((source_x_batch, source_y_batch), (target_x_batch, target_y_batch)) in enumerate(dual_loader):
@@ -75,9 +75,9 @@ def adapt_model(logger, source_dataset, target_dataset, args):
             s_t_features = torch.cat((s_features, t_features), 0)
             s_t_labels = torch.cat((s_labels, t_labels), 0)
 
-            s_t_features.to(device)
-            s_t_labels.to(device)
-            s_labels.to(device)
+            s_t_features = s_t_features.to(device)
+            s_t_labels = s_t_labels.to(device)
+            s_labels = s_labels.to(device)
 
             d_optimizer.zero_grad()
             t_optimizer.zero_grad()
@@ -106,7 +106,8 @@ def adapt_model(logger, source_dataset, target_dataset, args):
         with torch.no_grad():
             for x_batch, y_batch in target_eval_loader:
                 pred = eval_step(device, target_model, criterion, x_batch, y_batch)
-                utils.update_metrics(target_val_metrics, pred, y_batch)
+                utils.update_metrics(target_val_metrics, pred,
+                        y_batch.to(device))
 
 
         target_train_values = utils.compute_metrics(target_train_metrics)

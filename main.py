@@ -16,11 +16,10 @@ if __name__ == "__main__":
     arg_parser.add_argument('--n_train_samples', type=int, default = None)
     arg_parser.add_argument('--n_test_samples', type=int, default = None)
     arg_parser.add_argument('--batch_size', type=int, default = 128) 
-    arg_parser.add_argument('--train_epochs', type=int, default = 30)
-    arg_parser.add_argument('--adapt_epochs', type=int, default = 300)
+    arg_parser.add_argument('--train_epochs', type=int, default = 1)
+    arg_parser.add_argument('--adapt_epochs', type=int, default = 1)
     args = arg_parser.parse_args()
 
-    print(args.target_datasets.split(","))
     logger = Logger("_".join([args.source_dataset, 
                               str(args.n_train_samples), 
                               str(args.n_test_samples),

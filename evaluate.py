@@ -40,22 +40,24 @@ def evaluate_model(logger, eval_dataset, eval_model_prefix, args):
         'val_acc': metrics.Accuracy(),
         'val_conf': metrics.ConfusionMatrix(10),
     }
-
-    logger.create_log(logging_utils.EVAL_PREFIX + "_" + 
-                      eval_model_prefix + "_" +
-                      str(eval_dataset.name))
+    
+    log_prefix = (logging_utils.EVAL_PREFIX + "_" + 
+                  eval_model_prefix + "_" +
+                  str(eval_dataset.name))
+    logger.create_log(log_prefix)
     header_cols = list(train_metrics.keys())  + list(val_metrics.keys())
     logger.write_log_line(header_cols)
 
     model.eval()
     with torch.no_grad():
+        print("%s" % (log_prefix))
         for x_batch, y_batch in train_loader:
             pred = eval_step(device, model, criterion, x_batch, y_batch)
-            utils.update_metrics(train_metrics, pred, y_batch)
+            utils.update_metrics(train_metrics, pred, y_batch.to(device))
 
         for x_batch, y_batch in eval_loader:
             pred = eval_step(device, model, criterion, x_batch, y_batch)
-            utils.update_metrics(val_metrics, pred, y_batch)
+            utils.update_metrics(val_metrics, pred, y_batch.to(device))
 
         train_values = utils.compute_metrics(train_metrics)
         val_values = utils.compute_metrics(val_metrics)
