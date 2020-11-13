@@ -82,24 +82,26 @@ def adapt_model(logger, source_dataset, target_dataset, args):
             d_optimizer.zero_grad()
             t_optimizer.zero_grad()
 
-            d_pred = discriminator(s_t_features).squeeze()
-            d_loss = criterion(d_pred, s_t_labels)
-            d_loss.backward()
-            d_optimizer.step()
+            if i % args.adapt_discrim_batch_interval == 0:
+                d_pred = discriminator(s_t_features).squeeze()
+                d_loss = criterion(d_pred, s_t_labels)
+                d_loss.backward()
+                d_optimizer.step()
 
-            utils.update_metrics(discrim_metrics, d_pred, s_t_labels)
+                utils.update_metrics(discrim_metrics, d_pred, s_t_labels)
 
-            t_features = target_model.encoder(t_x_batch).view(t_x_batch.shape[0], -1)
+            if i % args.adapt_target_batch_interval == 0:
+                t_features = target_model.encoder(t_x_batch).view(t_x_batch.shape[0], -1)
 
-            d_optimizer.zero_grad()
-            t_optimizer.zero_grad()
+                d_optimizer.zero_grad()
+                t_optimizer.zero_grad()
 
-            d_pred = discriminator(t_features).squeeze()
-            t_loss = criterion(d_pred, s_labels)
-            t_loss.backward()
-            t_optimizer.step()
+                d_pred = discriminator(t_features).squeeze()
+                t_loss = criterion(d_pred, s_labels)
+                t_loss.backward()
+                t_optimizer.step()
 
-            utils.update_metrics(target_train_metrics, d_pred, s_labels)
+                utils.update_metrics(target_train_metrics, d_pred, s_labels)
     
 
         target_model.eval()
