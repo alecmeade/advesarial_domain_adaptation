@@ -66,12 +66,12 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
             t_s_y  = np.concatenate((t_s_y, t_y_batch))
             t_t_y  = np.concatenate((t_t_y, t_y_batch))
         
-        if i > args.include_batches:
+        if i >= args.include_batches:
             break
 
 
     features = np.concatenate((s_s_x, t_s_x, t_t_x))
-    tsne = manifold.TSNE(n_components=2, init='random', random_state=0, perplexity=300)
+    tsne = manifold.TSNE(n_components=2, init='random', random_state=0, perplexity=args.perplexity)
     tsne_features = tsne.fit_transform(features)
 
     s_s = s_s_x.shape[0]
@@ -82,14 +82,23 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
     s2 = s_s + t_s
     s3 = s_s + t_s + t_t
     
-    plt.figure()
-    plt.title("Source: %s | Target: %s" % (target, source))
-    plt.scatter(tsne_features[:s1, 0], tsne_features[:s1, 1], color='r', label="Source X - Source Encoder", alpha=0.3)
-    plt.scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], color='g', label="Target X - Source Encoder", alpha=0.3)
-    plt.scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], color='b', label="Target X - Target Encoder", alpha=0.3)
-    plt.legend()
-    plt.show()
+    f, ax = plt.subplots(1, 3)
+    s = 2
+    plt.suptitle("Source: %s | Target: %s" % (target, source))
+    ax[0].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, c=s_s_y, cmap='tab10')
+    ax[0].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", marker='x', alpha=0.3,  c=t_s_y, cmap='tab10')
+    ax[0].legend()
 
+    ax[1].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s,label="Source X - Source Encoder", alpha=0.3, c=s_s_y, cmap='tab10')
+    ax[1].scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], s=s, label="Target X - Target Encoder", marker='*', alpha=0.3, c=t_t_y, cmap='tab10')
+    ax[1].legend()
+
+    ax[2].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, color='r')
+    ax[2].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", alpha=0.3, color='g')
+    ax[2].scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], s=s, label="Target X - Target Encoder", alpha=0.3, color='b')
+    ax[2].legend()
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -97,19 +106,20 @@ if __name__ == "__main__":
     arg_parser.add_argument('--log_dir', type=str, default = "logs/USPS_7000_2000_2")
     arg_parser.add_argument('--source_dataset', type=str, default = "USPS")
     arg_parser.add_argument('--target_datasets', type=str, default = "MNIST")
-    arg_parser.add_argument('--tsne_samples', type=int, default = 1000)
+    arg_parser.add_argument('--tsne_samples', type=int, default = None)
     arg_parser.add_argument('--batch_size', type=int, default = 256) 
-    arg_parser.add_argument('--include_batches', type=int, default = 3) 
+    arg_parser.add_argument('--include_batches', type=int, default = 4) 
+    arg_parser.add_argument('--perplexity', type=int, default = 25) 
     args = arg_parser.parse_args()
 
 
     source_dataset = DatasetType[args.source_dataset]
-    s_eval_loader = get_dataloader(source_dataset, False, args.batch_size, None)
+    s_eval_loader = get_dataloader(source_dataset, False, args.batch_size, args.tsne_samples)
     s_model = load_best_model(TRAIN_PREFIX, args.log_dir)
 
     for target in args.target_datasets.split(","):
         target_dataset = DatasetType[target]
-        t_eval_loader = get_dataloader(target_dataset, False, args.batch_size, None)
+        t_eval_loader = get_dataloader(target_dataset, False, args.batch_size, args.tsne_samples)
         t_model = load_best_model(ADAPT_PREFIX + "_" + args.source_dataset + "_" + target, args.log_dir)
 
         plot_tsne(args.source_dataset, s_eval_loader, s_model, target, t_eval_loader, t_model)
