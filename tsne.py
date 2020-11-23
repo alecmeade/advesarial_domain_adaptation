@@ -7,6 +7,7 @@ import torch
 from dataloaders import DatasetType, get_dataloader
 from logging_utils import Logger, TRAIN_PREFIX, ADAPT_PREFIX
 from sklearn import manifold, datasets
+from scipy.stats import wasserstein_distance
 
 
 def get_model_score(model_name):
@@ -81,9 +82,9 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
     s1 = s_s
     s2 = s_s + t_s
     s3 = s_s + t_s + t_t
-    
+
     f, ax = plt.subplots(1, 3)
-    s = 2
+    s = 6
     plt.suptitle("Source: %s | Target: %s" % (target, source))
     ax[0].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, c=s_s_y, cmap='tab10')
     ax[0].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", marker='x', alpha=0.3,  c=t_s_y, cmap='tab10')
@@ -99,6 +100,18 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
     ax[2].legend()
 
     plt.show()
+
+
+    tsne = manifold.TSNE(n_components=1, init='random', random_state=0, perplexity=args.perplexity)
+    tsne_features = tsne.fit_transform(features)
+
+    # d1 = wasserstein_distance(tsne_features[:s1, 0], tsne_features[s1:s2, 0])
+    # d2 = wasserstein_distance(tsne_features[s1:s2, 0], tsne_features[s2:s3, 0])
+    # d3 = wasserstein_distance(tsne_features[:s1, 0], tsne_features[s2:s3, 0])
+
+    # print("SS-TS", d1)
+    # print("TS-TT", d2)
+    # print("SS-TT", d3)
 
 
 if __name__ == "__main__":

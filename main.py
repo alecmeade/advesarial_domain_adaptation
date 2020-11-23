@@ -11,6 +11,7 @@ from train import train_model
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--log_suffix', type=str, default = "2")
+    arg_parser.add_argument('--log_dir', type=str, default = "adda_logs")
     arg_parser.add_argument('--source_dataset', type=str, default = "MNIST")
     arg_parser.add_argument('--target_datasets', type=str, default = "USPS")
     arg_parser.add_argument('--n_train_samples', type=int, default = None)
@@ -23,7 +24,8 @@ if __name__ == "__main__":
     arg_parser.add_argument('--adapt_target_batch_interval', type=int, default = 1)
     args = arg_parser.parse_args()
 
-    logger = Logger("_".join([args.source_dataset, 
+    logger = Logger(args.log_dir,
+                "_".join([args.source_dataset, 
                               str(args.n_train_samples), 
                               str(args.n_test_samples),
                               args.log_suffix]))

@@ -39,3 +39,19 @@ class Discriminator(nn.Module):
 
 	def forward(self, x):
 		return self.model(x)
+
+
+class DomainCritic(nn.Module):
+	def __init__(self):
+		super().__init__()
+		self.model = nn.Sequential(
+            nn.Linear(800, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+   			nn.ReLU(),
+            nn.Linear(32, 1),
+            		)
+	def forward(self, x):
+		return self.model(x)
+
+

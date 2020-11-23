@@ -1,0 +1,8 @@
+log_suffix | 0
+source_dataset | SVHN
+target_datasets | MNIST,USPS
+n_train_samples | 7000
+n_test_samples | 2000
+batch_size | 128
+train_epochs | 30
+adapt_epochs | 300

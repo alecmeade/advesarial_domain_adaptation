@@ -1,0 +1,11 @@
+log_suffix | 1
+source_dataset | MNIST
+target_datasets | USPS
+n_train_samples | 7000
+n_test_samples | 2000
+batch_size | 64
+train_epochs | 30
+adapt_epochs | 500
+adapt_lr | 0.0001
+adapt_discrim_batch_interval | 3
+adapt_target_batch_interval | 1

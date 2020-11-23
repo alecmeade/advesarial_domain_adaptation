@@ -1,0 +1,11 @@
+log_suffix | 0
+log_dir | wdgrl_logs
+source_dataset | MNIST
+target_datasets | USPS,SVHN
+n_train_samples | 7000
+n_test_samples | 2000
+batch_size | 64
+train_epochs | 300
+lr | 0.0004
+gamma | 10
+critic_steps | 5

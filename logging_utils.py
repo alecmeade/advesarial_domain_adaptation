@@ -3,15 +3,14 @@ import shutil
 import re
 import torch
 
-LOG_DIR = 'logs/'
 TRAIN_PREFIX = "train"
 EVAL_PREFIX = "eval"
 ADAPT_PREFIX = "adapt"
 
 class Logger():
 
-    def __init__(self, log_dir, delim=" | "):
-        self.log_dir = os.path.join(LOG_DIR, log_dir)
+    def __init__(self, log_dir, log_folder, delim=" | "):
+        self.log_dir = os.path.join(log_dir, log_folder)
         self.delim = delim
         self.log = None
 
