@@ -83,22 +83,23 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
     s2 = s_s + t_s
     s3 = s_s + t_s + t_t
 
-    f, ax = plt.subplots(1, 3)
+    # f, ax = plt.subplots(1, 1)
+    # s = 6
+    # plt.suptitle("Source: %s | Target: %s" % (target, source))
+    # ax.scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, color='r')
+    # ax.scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", alpha=0.3, color='g')
+    # ax.scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], s=s, label="Target X - Target Encoder", alpha=0.3, color='b')
+    # ax.legend()
+    # plt.show()
+
+
+    f, ax = plt.subplots(1, 2, sharex = True, sharey = True)
     s = 6
-    plt.suptitle("Source: %s | Target: %s" % (target, source))
     ax[0].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, c=s_s_y, cmap='tab10')
-    ax[0].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", marker='x', alpha=0.3,  c=t_s_y, cmap='tab10')
-    ax[0].legend()
+    ax[0].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", marker='*', alpha=0.3,  c=t_s_y, cmap='tab10')
 
     ax[1].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s,label="Source X - Source Encoder", alpha=0.3, c=s_s_y, cmap='tab10')
     ax[1].scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], s=s, label="Target X - Target Encoder", marker='*', alpha=0.3, c=t_t_y, cmap='tab10')
-    ax[1].legend()
-
-    ax[2].scatter(tsne_features[:s1, 0], tsne_features[:s1, 1],  s=s, label="Source X - Source Encoder", alpha=0.3, color='r')
-    ax[2].scatter(tsne_features[s1:s2, 0], tsne_features[s1:s2, 1], s=s, label="Target X - Source Encoder", alpha=0.3, color='g')
-    ax[2].scatter(tsne_features[s2:s3, 0], tsne_features[s2:s3, 1], s=s, label="Target X - Target Encoder", alpha=0.3, color='b')
-    ax[2].legend()
-
     plt.show()
 
 
@@ -116,13 +117,13 @@ def plot_tsne(source, source_dataset, source_model, target, target_dataset, targ
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument('--log_dir', type=str, default = "logs/USPS_7000_2000_2")
+    arg_parser.add_argument('--log_dir', type=str, default = "adda_logs/USPS_7000_2000_2")
     arg_parser.add_argument('--source_dataset', type=str, default = "USPS")
     arg_parser.add_argument('--target_datasets', type=str, default = "MNIST")
     arg_parser.add_argument('--tsne_samples', type=int, default = None)
     arg_parser.add_argument('--batch_size', type=int, default = 256) 
-    arg_parser.add_argument('--include_batches', type=int, default = 4) 
-    arg_parser.add_argument('--perplexity', type=int, default = 25) 
+    arg_parser.add_argument('--include_batches', type=int, default = 3) 
+    arg_parser.add_argument('--perplexity', type=int, default = 200) 
     args = arg_parser.parse_args()
 
 

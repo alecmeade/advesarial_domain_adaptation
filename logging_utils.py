@@ -9,15 +9,16 @@ ADAPT_PREFIX = "adapt"
 
 class Logger():
 
-    def __init__(self, log_dir, log_folder, delim=" | "):
+    def __init__(self, log_dir, log_folder, delim=" | ", delete_logs = False):
         self.log_dir = os.path.join(log_dir, log_folder)
         self.delim = delim
         self.log = None
 
-        if os.path.exists(self.log_dir):
-            shutil.rmtree(self.log_dir)
+        if delete_logs: 
+            if os.path.exists(self.log_dir):
+                shutil.rmtree(self.log_dir)
         
-        os.mkdir(self.log_dir)      
+            os.mkdir(self.log_dir)      
 
     def create_log(self, name):
         self.log = open(os.path.join(self.log_dir, ("%s.txt" % name)), "w")
